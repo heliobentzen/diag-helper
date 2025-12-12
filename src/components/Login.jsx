@@ -115,10 +115,10 @@ export default function Login() {
             <button
               type="button"
               onClick={() => navigate("/suporte")}
-              className="text-blue-600 hover:underline mt-3 text-center">
-              Esqueci minha senha / Falar com o suporte
+              className="text-sm text-gray-500 hover:text-blue-600 cursor-pointer">
+              Esqueci minha senha? Falar com o suporte
             </button>
-
+{/* text-blue-600 hover:underline mt-3 text-center*/}
           </form>
         </div>
         {/* logo */}

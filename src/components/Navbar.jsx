@@ -1,4 +1,4 @@
-
+// import LogoExpandida from "../assets/6.svg"
 import { useState } from "react";
 import {
   FcHome,
@@ -25,6 +25,18 @@ function Navbar({ expanded, setExpanded }) {
         ${expanded ? "w-64" : "w-22"}
       `}
     >
+      {/* Logo com possivel alteração*/}
+      <div className="flex items-center justify-center mb-2 relative py-14">
+        {/* Logo Grande */}
+        <img src="src/assets/6.svg" alt="Logo Expandida" className={`absolute py-4 transition-all duration-300 ${expanded ? "opacity-100 w-48" : "opacity-0 w-12"}`} />
+
+        {/*  Logo Pequeno */}
+        <img src="src/assets/icon-diaghelper.svg" alt="Logo Minimizada" className={`absolute py-4 transition-all duration-300 ${expanded ? "opacity-0 w-48" : "opacity-100 w-12"}`} />
+
+      </div>
+
+
+
       <div className="flex flex-col h-full px-6 p-6">
         {/* Botão expandir */}
         <button
