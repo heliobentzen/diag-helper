@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import NovoExame from "../modals/NovoExame";
 import ModalConfirmarExclusao from "../modals/ModalConfirmarExclusao";
 import PageWrapper from "../components/PageWrapper";
 
 function CadastroPacientes() {
+  // ===== STATES =====
   const [pacientes, setPacientes] = useState([]);
-  const [editId, setEditId] = useState(null);
   const [pesquisa, setPesquisa] = useState("");
-  const [openModal, setOpenModal] = useState(false); //confirmar exclusão do paciente
-  const [idSelecionado, setIdSelecionado] = useState(null);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [editId, setEditId] = useState(null);
 
+  const [openModal, setOpenModal] = useState(false);
+  const [idSelecionado, setIdSelecionado] = useState(null);
 
   const [formPacientes, setFormPacientes] = useState({
     nome: "",
@@ -26,110 +27,20 @@ function CadastroPacientes() {
     resultado: "",
   });
 
-  // Estados do modal
-  const [modalExameAberto, setModalExameAberto] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
-
-  const [exameNovoModal, setExameNovoModal] = useState({
-    tipo: "",
-    data: "",
-    resultado: "",
-  });
-
-  // Carregar pacientes do backend
+  // ===== LOAD =====
   useEffect(() => {
     fetch("http://localhost:3001/pacientes")
       .then((res) => res.json())
-      .then((data) => setPacientes(data))
-      .catch((err) => console.error("Erro ao carregar pacientes:", err));
+      .then(setPacientes)
+      .catch(console.error);
   }, []);
 
-  // Atualiza dados do paciente
-  const handleChange = (e) => {
+  // ===== HANDLERS =====
+  const handleChange = (e) =>
     setFormPacientes({ ...formPacientes, [e.target.name]: e.target.value });
-  };
 
-  // Atualiza dados do exame temporário
-  const handleExameChange = (e) => {
+  const handleExameChange = (e) =>
     setNovoExame({ ...novoExame, [e.target.name]: e.target.value });
-  };
-
-  // Adiciona exame ao array do paciente (na seção do formulário de cadastro)
-  const adicionarExame = () => {
-    if (!novoExame.tipo || !novoExame.data || !novoExame.resultado) return;
-    setFormPacientes({
-      ...formPacientes,
-      exames: [...formPacientes.exames, novoExame],
-    });
-    setNovoExame({ tipo: "", data: "", resultado: "" });
-  };
-
-  // Iniciar edição de paciente
-  function iniciarEdicao(paciente) {
-    setEditId(paciente.id);
-    setFormPacientes(paciente);
-  }
-
-  // Salvar edição
-  const salvarEdicao = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`http://localhost:3001/pacientes/${editId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formPacientes),
-      });
-
-      const atualizado = await res.json();
-      setPacientes((prev) =>
-        prev.map((p) => (p.id === editId ? atualizado : p))
-      );
-      setEditId(null);
-      limparFormulario();
-    } catch (error) {
-      console.error("Erro ao editar paciente:", error);
-    }
-  };
-
-  // Excluir paciente
-  const excluirPaciente = async (id) => {
-    try {
-      await fetch(`http://localhost:3001/pacientes/${id}`, { method: "DELETE" });
-      setPacientes((prev) => prev.filter((p) => p.id !== id));
-    } catch (error) {
-      console.error("Erro ao excluir paciente:", error);
-    }
-  };
-
-  // confirmar exclusão do paciente
-  const confirmarExclusao = async () => {
-    await excluirPaciente(idSelecionado);
-    setOpenModal(false);
-    setIdSelecionado(null);
-  }
-
-  // Cadastrar paciente com exames
-  const cadastrarPaciente = async (e) => {
-    e.preventDefault();
-    if (!formPacientes.nome || !formPacientes.dataNascimento || !formPacientes.telefone) {
-      alert("Preencha os campos obrigatórios!");
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:3001/pacientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formPacientes),
-      });
-
-      const pacienteSalvo = await res.json();
-      setPacientes((prev) => [...prev, pacienteSalvo]);
-      limparFormulario();
-    } catch (error) {
-      console.error("Erro ao cadastrar paciente:", error);
-    }
-  };
 
   function limparFormulario() {
     setFormPacientes({
@@ -143,339 +54,257 @@ function CadastroPacientes() {
     setNovoExame({ tipo: "", data: "", resultado: "" });
   }
 
-  // Abrir modal para adicionar novo exame
-  function abrirModalExame(paciente) {
-    setPacienteSelecionado(paciente);
-    setExameNovoModal({ tipo: "", data: "", resultado: "" });
-    setModalExameAberto(true);
+  function iniciarEdicao(paciente) {
+    setEditId(paciente.id);
+    setFormPacientes(paciente);
+    setMostrarFormulario(true);
   }
 
-  // Salvar exame pelo modal
-  async function salvarExameModal() {
-    if (!exameNovoModal.tipo || !exameNovoModal.data || !exameNovoModal.resultado) {
-      alert("Preencha todos os campos do exame.");
+  function adicionarExame() {
+    if (!novoExame.tipo || !novoExame.data || !novoExame.resultado) return;
+
+    setFormPacientes({
+      ...formPacientes,
+      exames: [...formPacientes.exames, novoExame],
+    });
+
+    setNovoExame({ tipo: "", data: "", resultado: "" });
+  }
+
+  async function cadastrarPaciente(e) {
+    e.preventDefault();
+
+    if (!formPacientes.nome || !formPacientes.telefone) {
+      alert("Preencha os campos obrigatórios!");
       return;
     }
 
-    const examesAtualizados = [
-      ...(pacienteSelecionado.exames || []),
-      exameNovoModal,
-    ];
+    const res = await fetch("http://localhost:3001/pacientes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formPacientes),
+    });
 
-    try {
-      const res = await fetch(
-        `http://localhost:3001/pacientes/${pacienteSelecionado.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...pacienteSelecionado,
-            exames: examesAtualizados,
-          }),
-        }
-      );
-
-      const atualizado = await res.json();
-
-      setPacientes((prev) =>
-        prev.map((p) => (p.id === atualizado.id ? atualizado : p))
-      );
-
-      setModalExameAberto(false);
-      setPacienteSelecionado(null);
-    } catch (error) {
-      console.error("Erro ao salvar exame:", error);
-    }
+    const novo = await res.json();
+    setPacientes([...pacientes, novo]);
+    limparFormulario();
+    setMostrarFormulario(false);
   }
 
-  // Filtrar pacientes pela pesquisa
+  async function salvarEdicao(e) {
+    e.preventDefault();
+
+    const res = await fetch(
+      `http://localhost:3001/pacientes/${editId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formPacientes),
+      }
+    );
+
+    const atualizado = await res.json();
+
+    setPacientes(
+      pacientes.map((p) => (p.id === editId ? atualizado : p))
+    );
+
+    setEditId(null);
+    limparFormulario();
+    setMostrarFormulario(false);
+  }
+
+  async function confirmarExclusao() {
+    await fetch(
+      `http://localhost:3001/pacientes/${idSelecionado}`,
+      { method: "DELETE" }
+    );
+
+    setPacientes(pacientes.filter((p) => p.id !== idSelecionado));
+    setOpenModal(false);
+  }
+
+  // ===== FILTER =====
   const pacientesFiltrados = pacientes.filter(
     (p) =>
       p.nome.toLowerCase().includes(pesquisa.toLowerCase()) ||
       p.cpf.includes(pesquisa)
   );
 
+  // ===== RENDER =====
   return (
-  <PageWrapper title="Cadastro pacientes">
+    <PageWrapper title="Cadastro de Pacientes">
+      <main className="p-8 space-y-8">
 
-    
-
-      <main className={`flex-1 p-8 ${modalExameAberto ? "blur-sm" : ""}`}>
-
-        {/* Campo de pesquisa */}
-        <div className="mb-4">
+        {/* 🔍 PESQUISA + BOTÃO */}
+        <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
           <input
             type="text"
-            placeholder="🔍 Pesquisar paciente por nome ou CPF"
+            placeholder="🔍 Pesquisar por nome ou CPF"
             value={pesquisa}
             onChange={(e) => setPesquisa(e.target.value)}
             className="w-full md:w-1/3 p-2 border rounded-lg"
           />
+
+          <button
+            onClick={() => {
+              setMostrarFormulario(!mostrarFormulario);
+              setEditId(null);
+              limparFormulario();
+            }}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700"
+          >
+            {mostrarFormulario ? "Fechar cadastro" : "Cadastrar paciente"}
+          </button>
         </div>
 
-        {/* FORMULÁRIO COMPLETO (Paciente + Exames) */}
-        <form
-          onSubmit={editId ? salvarEdicao : cadastrarPaciente}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-6 rounded-lg border"
-        >
-          <div>
-            <label className="font-medium text-gray-700">Nome</label>
+        {/* 🧾 FORMULÁRIO */}
+        {mostrarFormulario && (
+          <form
+            onSubmit={editId ? salvarEdicao : cadastrarPaciente}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-6 rounded-lg border"
+          >
             <input
-              type="text"
               name="nome"
+              placeholder="Nome"
               value={formPacientes.nome}
               onChange={handleChange}
-              className="w-full p-2 mt-1 border rounded-lg"
+              className="p-2 border rounded"
             />
-          </div>
 
-          <div>
-            <label className="font-medium text-gray-700">Data de Nascimento</label>
             <input
               type="date"
               name="dataNascimento"
               value={formPacientes.dataNascimento}
               onChange={handleChange}
-              className="w-full p-2 mt-1 border rounded-lg"
+              className="p-2 border rounded"
             />
-          </div>
 
-          <div>
-            <label className="font-medium text-gray-700">Telefone</label>
             <input
-              type="text"
               name="telefone"
+              placeholder="Telefone"
               value={formPacientes.telefone}
               onChange={handleChange}
-              className="w-full p-2 mt-1 border rounded-lg"
-              placeholder="(xx) xxxxx-xxxx"
+              className="p-2 border rounded"
             />
-          </div>
 
-          <div>
-            <label className="font-medium text-gray-700">CPF</label>
             <input
-              type="text"
               name="cpf"
+              placeholder="CPF"
               value={formPacientes.cpf}
               onChange={handleChange}
-              className="w-full p-2 mt-1 border rounded-lg"
-              placeholder="xxx.xxx.xxx-xx"
+              className="p-2 border rounded"
             />
-          </div>
 
-          <div>
-            <label className="font-medium text-gray-700">Idade</label>
             <input
               type="number"
               name="idade"
+              placeholder="Idade"
               value={formPacientes.idade}
               onChange={handleChange}
-              className="w-full p-2 mt-1 border rounded-lg"
-              placeholder="Idade"
+              className="p-2 border rounded"
             />
-          </div>
 
-          {/* Campos do exame */}
-          <div className="md:col-span-3 border-t pt-4 mt-4">
-            <h2 className="font-bold text-lg mb-2">Adicionar Exame</h2>
+            {/* EXAMES */}
+            <div className="md:col-span-3 border-t pt-4">
+              <h3 className="font-bold mb-2">Adicionar exame</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-              <input
-                type="text"
-                name="tipo"
-                placeholder="Tipo de exame"
-                value={novoExame.tipo}
-                onChange={handleExameChange}
-                className="w-full p-2 border rounded-lg"
-              />
+              <div className="grid md:grid-cols-3 gap-3">
+                <input
+                  name="tipo"
+                  placeholder="Tipo"
+                  value={novoExame.tipo}
+                  onChange={handleExameChange}
+                  className="p-2 border rounded"
+                />
 
-              <input
-                type="date"
-                name="data"
-                value={NovoExame.data}
-                onChange={handleExameChange}
-                className="w-full p-2 border rounded-lg"
-              />
+                <input
+                  type="date"
+                  name="data"
+                  value={novoExame.data}
+                  onChange={handleExameChange}
+                  className="p-2 border rounded"
+                />
 
-              <input
-                type="text"
-                name="resultado"
-                placeholder="Resultado"
-                value={novoExame.resultado}
-                onChange={handleExameChange}
-                className="w-full p-2 border rounded-lg"
-              />
+                <input
+                  name="resultado"
+                  placeholder="Resultado"
+                  value={novoExame.resultado}
+                  onChange={handleExameChange}
+                  className="p-2 border rounded"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={adicionarExame}
+                className="mt-3 bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Adicionar exame
+              </button>
             </div>
 
             <button
-              type="button"
-              onClick={adicionarExame}
-              className="bg-green-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-700 transition"
+              type="submit"
+              className="md:col-span-3 bg-blue-600 text-white py-2 rounded font-bold"
             >
-              Adicionar Exame
+              {editId ? "Salvar edição" : "Cadastrar paciente"}
             </button>
+          </form>
+        )}
 
-            {formPacientes.exames.length > 0 && (
-              <ul className="list-disc list-inside mt-2">
-                {formPacientes.exames.map((e, idx) => (
-                  <li key={idx}>
-                    {e.tipo} - {e.data} - {e.resultado}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+        {/* 📋 LISTA SEMPRE VISÍVEL */}
+        <section>
+          <h2 className="text-xl font-bold mb-4">
+            Pacientes cadastrados ({pacientesFiltrados.length})
+          </h2>
 
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition md:col-span-3"
-          >
-            {editId ? "Salvar edição" : "Cadastrar paciente"}
-          </button>
-        </form>
+          {pacientesFiltrados.length === 0 ? (
+            <p className="text-gray-500">Nenhum paciente encontrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {pacientesFiltrados.map((p) => (
+                <div
+                  key={p.id}
+                  className="grid grid-cols-1 md:grid-cols-6 gap-4 bg-white p-4 rounded-lg border items-center"
+                >
+                  <p><strong>Nome:</strong> {p.nome}</p>
+                  <p><strong>Telefone:</strong> {p.telefone}</p>
+                  <p><strong>CPF:</strong> {p.cpf}</p>
+                  <p><strong>Idade:</strong> {p.idade}</p>
 
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => iniciarEdicao(p)}
+                      className="text-blue-600 font-semibold"
+                    >
+                      Editar
+                    </button>
 
-        {/* LISTA DE PACIENTES */}
-        <h2 className="text-xl font-bold mt-8 mb-4 text-gray-800">
-          Pacientes cadastrados
-        </h2>
-
-        <div className="space-y-2">
-          {pacientesFiltrados.map((p) => (
-            <div
-              key={p.id}
-              className="grid grid-cols-1 md:grid-cols-6 gap-4 bg-white p-4 rounded-lg border items-start"
-            >
-              <p><span className="font-bold">Nome:</span> {p.nome}</p>
-              <p><span className="font-bold">Nascimento:</span> {p.dataNascimento}</p>
-              <p><span className="font-bold">Telefone:</span> {p.telefone}</p>
-              <p><span className="font-bold">CPF:</span> {p.cpf}</p>
-              <p><span className="font-bold">Idade:</span> {p.idade}</p>
-
-              <div className="flex flex-col gap-1">
-
-                {/* BOTÕES */}
-                <div className="flex gap-3 items-center">
-                  <button
-                    onClick={() => iniciarEdicao(p)}
-                    className="text-blue-600 font-semibold hover:underline"
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIdSelecionado(p.id); //guarda o id do paciente
-                      setOpenModal(true);
-                    }
-                    }
-                    className="text-red-600 font-semibold hover:underline"
-                  >
-                    Excluir
-                  </button>
-
-                  <button
-                    onClick={() => abrirModalExame(p)}
-                    className="text-green-700 text-xl font-bold hover:scale-125 transition"
-                    title="Adicionar exame"
-                  >
-                    +
-                  </button>
+                    <button
+                      onClick={() => {
+                        setIdSelecionado(p.id);
+                        setOpenModal(true);
+                      }}
+                      className="text-red-600 font-semibold"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </div>
-
-                {/* EXAMES */}
-                <div className="mt-2">
-                  <p className="font-bold">Exames:</p>
-                  {p.exames && p.exames.length > 0 ? (
-                    <ul className="list-disc list-inside">
-                      {p.exames.map((e, idx) => (
-                        <li key={idx}>
-                          {e.tipo} - {e.data} - {e.resultado}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500 text-sm">Nenhum exame cadastrado</p>
-                  )}
-                </div>
-
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </section>
       </main>
 
-      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
-          <ModalConfirmarExclusao
-            open={openModal}
-            onClose={() => setOpenModal(false)}
-            onConfirm={confirmarExclusao}
-          />
-
-      {/* MODAL */}
-      {modalExameAberto && (
-        <div className="fixed inset-0 flex justify-center items-center bg-opacity-50 backdrop-blur-sm z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4 text-center">
-              Novo Exame para {pacienteSelecionado?.nome}
-            </h2>
-
-            <input
-              type="text"
-              placeholder="Tipo do exame"
-              value={exameNovoModal.tipo}
-              onChange={(e) =>
-                setExameNovoModal({ ...exameNovoModal, tipo: e.target.value })
-              }
-              className="w-full p-2 border rounded mb-3"
-            />
-
-            <input
-              type="date"
-              value={exameNovoModal.data}
-              onChange={(e) =>
-                setExameNovoModal({ ...exameNovoModal, data: e.target.value })
-              }
-              className="w-full p-2 border rounded mb-3"
-            />
-
-            <input
-              type="text"
-              placeholder="Resultado"
-              value={exameNovoModal.resultado}
-              onChange={(e) =>
-                setExameNovoModal({
-                  ...exameNovoModal,
-                  resultado: e.target.value,
-                })
-              }
-              className="w-full p-2 border rounded mb-4"
-            />
-
-            <div className="flex justify-between">
-              <button
-                onClick={() => setModalExameAberto(false)}
-                className="px-4 py-2 bg-gray-400 text-white rounded-lg"
-              >
-                Cancelar
-              </button>
-
-              <button
-                onClick={salvarExameModal}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Salvar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-    
-
+      <ModalConfirmarExclusao
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        onConfirm={confirmarExclusao}
+      />
     </PageWrapper>
   );
 }
 
-export default CadastroPacientes
+export default CadastroPacientes;

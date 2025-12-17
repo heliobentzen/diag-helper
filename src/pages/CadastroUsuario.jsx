@@ -4,6 +4,7 @@ import PageWrapper from "../components/PageWrapper";
 
 export default function Dashboard() {
   const [usuarios, setUsuarios] = useState([]);
+  const [pesquisa, setPesquisa] = useState("");
 
   const [form, setForm] = useState({
     nome: "",
@@ -17,24 +18,23 @@ export default function Dashboard() {
   const [tipoUsuario, setTipoUsuario] = useState("medico");
   const [erroCadastro, setErroCadastro] = useState("");
 
-  // Buscar usuários ao carregar a página
+  // ===== LOAD =====
   useEffect(() => {
     fetch("http://localhost:3001/usuarios")
       .then((res) => res.json())
-      .then((data) => setUsuarios(data))
+      .then(setUsuarios)
       .catch((err) => console.error("Erro ao carregar usuários:", err));
   }, []);
 
   const gerarDataHora = () => {
     const agora = new Date();
-    const data = agora.toLocaleDateString("pt-BR");
-    const hora = agora.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    return `${data} ${hora}`;
+    return `${agora.toLocaleDateString("pt-BR")} ${agora.toLocaleTimeString(
+      "pt-BR",
+      { hour: "2-digit", minute: "2-digit" }
+    )}`;
   };
 
+  // ===== CADASTRAR =====
   const cadastrar = async (e) => {
     e.preventDefault();
 
@@ -60,35 +60,45 @@ export default function Dashboard() {
       const usuarioSalvo = await res.json();
       setUsuarios((prev) => [...prev, usuarioSalvo]);
 
-      // Resetar form
       setForm({ nome: "", cpf: "", cargo: "", status: "Ativo" });
       setSenha("");
       setConfirmaSenha("");
       setTipoUsuario("medico");
       setErroCadastro("");
     } catch (err) {
-      console.error("Erro ao cadastrar:", err);
+      console.error(err);
       setErroCadastro("Erro ao cadastrar usuário.");
     }
   };
 
+  // ===== REMOVER =====
   const remover = async (id) => {
-    try {
-      await fetch(`http://localhost:3001/usuarios/${id}`, { method: "DELETE" });
-      setUsuarios((prev) => prev.filter((u) => u.id !== id));
-    } catch (err) {
-      console.error("Erro ao excluir usuário:", err);
-    }
+    await fetch(`http://localhost:3001/usuarios/${id}`, { method: "DELETE" });
+    setUsuarios((prev) => prev.filter((u) => u.id !== id));
   };
 
-  const total = usuarios.length;
-  const ativos = usuarios.filter((u) => u.status === "Ativo").length;
-  const novosHoje = usuarios.filter((u) =>
-    u.criadoEm?.startsWith(new Date().toLocaleDateString("pt-BR"))
-  ).length;
+  // ===== FILTER =====
+  const usuariosFiltrados = usuarios.filter(
+    (u) =>
+      u.nome.toLowerCase().includes(pesquisa.toLowerCase()) ||
+      u.cpf.includes(pesquisa) ||
+      u.cargo.toLowerCase().includes(pesquisa.toLowerCase()) ||
+      u.tipoUsuario.toLowerCase().includes(pesquisa.toLowerCase())
+  );
 
   return (
     <PageWrapper title="Dashboard">
+      {/* 🔍 PESQUISA NO TOPO */}
+      <section className="bg-white p-4 shadow rounded mb-6">
+        <input
+          type="text"
+          placeholder="🔍 Pesquisar por nome, CPF, cargo ou tipo de usuário"
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full md:w-1/2 p-2 border rounded-lg"
+        />
+      </section>
+
       {/* FORM CADASTRO */}
       <section className="bg-white p-4 shadow rounded mb-6">
         <h2 className="text-lg font-bold mb-4">Novo Usuário</h2>
@@ -109,14 +119,12 @@ export default function Dashboard() {
             onChange={(e) => setForm({ ...form, cpf: e.target.value })}
           />
 
-          {/* Cargo */}
           <Input
             label="Cargo"
             value={form.cargo}
             onChange={(e) => setForm({ ...form, cargo: e.target.value })}
           />
 
-          {/* Status */}
           <select
             className="border p-2 rounded w-full"
             value={form.status}
@@ -126,7 +134,6 @@ export default function Dashboard() {
             <option value="Inativo">Inativo</option>
           </select>
 
-          {/* Senha */}
           <Input
             label="Senha"
             type="password"
@@ -141,7 +148,6 @@ export default function Dashboard() {
             onChange={(e) => setConfirmaSenha(e.target.value)}
           />
 
-          {/* Tipo de usuário */}
           <select
             className="border p-2 rounded w-full"
             value={tipoUsuario}
@@ -154,17 +160,16 @@ export default function Dashboard() {
           </select>
 
           {erroCadastro && (
-            <p className="text-red-500 text-sm mt-1 col-span-2">
+            <p className="text-red-500 text-sm col-span-2">
               {erroCadastro}
             </p>
           )}
 
-          {/* Botão salvar */}
           <button
             type="submit"
-            className="bg-gray-500 text-black rounded flex items-center justify-center px-3 py-2 mt-2 w-32 hover:bg-gray-600"
+            className="bg-gray-500 text-black rounded flex items-center justify-center px-3 py-2 w-32 hover:bg-gray-600"
           >
-            <MdSaveAlt size={16} color="black" className="mr-2" />
+            <MdSaveAlt size={16} className="mr-2" />
             Salvar
           </button>
         </form>
@@ -172,7 +177,9 @@ export default function Dashboard() {
 
       {/* TABELA */}
       <section className="bg-white p-4 shadow rounded">
-        <h2 className="text-lg font-bold mb-4">Usuários Cadastrados</h2>
+        <h2 className="text-lg font-bold mb-4">
+          Usuários Cadastrados ({usuariosFiltrados.length})
+        </h2>
 
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -189,7 +196,7 @@ export default function Dashboard() {
             </thead>
 
             <tbody>
-              {usuarios.map((u) => (
+              {usuariosFiltrados.map((u) => (
                 <tr key={u.id} className="border-b">
                   <Td>{u.nome}</Td>
                   <Td>{u.cpf}</Td>
@@ -215,23 +222,7 @@ export default function Dashboard() {
   );
 }
 
-/* COMPONENTES AUXILIARES */
-function Card({ title, value, color }) {
-  const bgColor =
-    color === "blue"
-      ? "bg-blue-600"
-      : color === "green"
-      ? "bg-green-600"
-      : "bg-yellow-500";
-
-  return (
-    <div className={`${bgColor} p-4 shadow rounded text-center`}>
-      <p className="font-semibold mb-2 text-white">{title}</p>
-      <p className="text-3xl font-bold text-white">{value}</p>
-    </div>
-  );
-}
-
+/* ===== COMPONENTES ===== */
 function Input({ label, type = "text", ...props }) {
   return (
     <input
