@@ -515,6 +515,132 @@
       "detalhes": null,
       "data": "2026-01-02T14:53:49.219Z",
       "ip": "127.0.0.1"
+    },
+    {
+      "id": "c494",
+      "usuario": "Usuário Desconhecido",
+      "acao": "ERRO: POST em /LogsAuditoria",
+      "tipo": "ERRO",
+      "detalhes": null,
+      "data": "2026-01-07T12:00:01.465Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "b9a6",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-07T12:00:41.661Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "8bdd",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-07T12:01:11.892Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "20ab",
+      "usuario": "Admin Sistema",
+      "acao": "Gerou laudo médico para o paciente: Carlos Henrique Lima",
+      "tipo": "LAUDO",
+      "detalhes": null,
+      "data": "2026-01-07T12:02:33.320Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "d8fe",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-07T12:03:01.034Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "b87e",
+      "usuario": "Admin Sistema",
+      "acao": "ERRO: POST em /LogsAuditoria",
+      "tipo": "ERRO",
+      "detalhes": null,
+      "data": "2026-01-09T00:17:15.346Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "c240",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-09T00:17:29.503Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "2e33",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-09T00:33:28.676Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "4707",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-09T00:46:03.277Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "485f",
+      "usuario": "Admin Sistema",
+      "acao": "ERRO: POST em /LogsAuditoria",
+      "tipo": "ERRO",
+      "detalhes": null,
+      "data": "2026-01-09T00:56:46.560Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "13e4",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-09T00:56:50.781Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "d8c7",
+      "usuario": "Admin Sistema",
+      "acao": "ERRO: POST em /LogsAuditoria",
+      "tipo": "ERRO",
+      "detalhes": null,
+      "data": "2026-01-09T01:02:43.785Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "5f39",
+      "usuario": "Admin Sistema",
+      "acao": "ERRO: POST em /LogsAuditoria",
+      "tipo": "ERRO",
+      "detalhes": null,
+      "data": "2026-01-09T01:09:36.906Z",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "dd67",
+      "usuario": "Admin Sistema",
+      "acao": "Realizou login no sistema",
+      "tipo": "LOGIN",
+      "detalhes": null,
+      "data": "2026-01-09T01:09:42.279Z",
+      "ip": "127.0.0.1"
     }
   ],
   "pacientes": [
